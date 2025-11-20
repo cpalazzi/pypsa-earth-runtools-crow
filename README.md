@@ -86,22 +86,35 @@ echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
 source ~/.bashrc
 ```
 
-Once the build job mails you (or the log stops growing) jump into a short interactive session to verify:
+> Alternative: if you prefer not to touch `~/.bashrc`, create a tiny helper environment that only hosts micromamba:
+>
+> ```bash
+> module load Anaconda3/2023.09
+> conda create -y -p /data/engs-df-green-ammonia/$USER/envs/conda-tools micromamba
+> ```
+>
+> Then, in each ARC shell run `source activate /data/engs-df-green-ammonia/$USER/envs/conda-tools` before calling any `micromamba` commands.
+
+Once the build job mails you (or the log stops growing) jump into a short interactive session to verify. The key is to **let micromamba manage activation**—do **not** use `conda activate` on the PyPSA-Earth environment or PuLP may jump back to 3.x.
 
 ```bash
 srun --pty --partition=interactive --time=00:30:00 --cpus-per-task=2 --mem=4G /bin/bash
 module load Anaconda3/2023.09
+source activate /data/engs-df-green-ammonia/engs2523/envs/conda-tools   # provides the micromamba CLI
+eval "$(micromamba shell hook --shell bash)"                           # teach the current shell about micromamba
 micromamba activate /data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env
 python -c "import pulp, snakemake; print('PuLP', pulp.__version__); print('Snakemake', snakemake.__version__)"
 snakemake --version
 ```
 
-> If `micromamba` is not on PATH yet, source `~/.bashrc` or call it via an absolute path (e.g. `$HOME/bin/micromamba`).
+> If you skipped the `conda-tools` helper env, call micromamba explicitly (e.g. `$HOME/bin/micromamba activate …`) and still run the shell hook: `eval "$($HOME/bin/micromamba shell hook --shell bash)"`.
 
 After the checks, deactivate (`micromamba deactivate`) and exit the interactive shell. Each future Snakemake run only needs:
 
 ```bash
 module load Anaconda3/2023.09
+source activate /data/engs-df-green-ammonia/engs2523/envs/conda-tools
+eval "$(micromamba shell hook --shell bash)"
 micromamba activate /data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env
 cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
 ```
@@ -115,17 +128,19 @@ cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
    - HiGHS as the solver with low memory needs,
    - a unique run name: `run.name = europe-single-hour`.
 
-2. Perform a lightweight dry-run before the actual execution:
+> First-time runs need to download cutouts, osm extracts, and databundles (tens of GB). To get that out of the way, run `snakemake --cores 8 retrieve_databundle_light download_osm_data build_cutout` (or submit the batch script with `ARC_STAGE_DATA=1`) before attempting the full solve.
+
+2. Perform a lightweight dry-run before the actual execution. Recent PyPSA-Earth releases renamed the master rule to `solve_network`; if you ever hit a `MissingRuleException`, double-check via `snakemake --list` to see the available targets:
 
    ```zsh
-   snakemake -call solve_elec_networks -n \
+   snakemake -call solve_network -n \
      --configfile config/default-single-timestep.yaml
    ```
 
 3. Once the DAG looks reasonable (≈15 rules thanks to the single snapshot), launch the real job either interactively or via Slurm. With 16 threads the run usually wraps in <30 minutes because all time-series collapse to one hour.
 
    ```zsh
-   snakemake -call solve_elec_networks \
+   snakemake -call solve_network \
      --configfile config/default-single-timestep.yaml \
      -j 16 --resources mem_mb=32000 --keep-going --rerun-incomplete
    ```
@@ -144,10 +159,10 @@ cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
 3. Run Snakemake with both config files so the ammonia overrides apply on top of the baseline defaults:
 
    ```zsh
-   snakemake -call solve_elec_networks \
+    snakemake -call solve_network \
      --configfile config/default-single-timestep.yaml \
      --configfile config/overrides/green-ammonia.yaml \
-     -j 16 --resources mem_mb=32000 --keep-going
+       -j 16 --resources mem_mb=32000 --keep-going
    ```
 
 4. Compare `results/europe-green-ammonia/networks/base_s_37_elec_.nc` with the baseline network. Focus on:
@@ -157,11 +172,13 @@ cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
 
 ### 5. Submitting through ARC Slurm
 
-The helper script `jobs/arc_snakemake.sh` wraps the Snakemake commands in a Slurm batch job. Update CPU, memory, and walltime according to your ARC project allocation. Submit as follows:
+The helper script `jobs/arc_snakemake.sh` wraps the Snakemake commands in a Slurm batch job. It now activates the micromamba-managed environment (via the `conda-tools` helper), can optionally pre-stage the large data downloads, and understands a dry-run mode. Submit as follows (override the partition/time on the command line when you expect long data transfers):
 
 ```zsh
-sbatch jobs/arc_snakemake.sh baseline
-sbatch jobs/arc_snakemake.sh green-ammonia
+ARC_STAGE_DATA=1 ARC_SNAKE_DRYRUN=1 \
+   sbatch --partition=long --time=24:00:00 jobs/arc_snakemake.sh baseline   # first run: download + dry-run
+sbatch jobs/arc_snakemake.sh baseline                                      # full solve once data exist
+sbatch jobs/arc_snakemake.sh green-ammonia                                 # stress-test scenario
 ```
 
 The script accepts a single argument (`baseline` or `green-ammonia`) and selects the right Snakemake command plus config stack.
@@ -170,6 +187,9 @@ Environment/module tips for ARC submissions:
 
 - Set `ARC_WORKDIR=/data/engs-df-green-ammonia/engs2523/pypsa-earth` (or similar) before `sbatch` so that the job runs inside the large shared filesystem automatically.
 - Set `ARC_ANACONDA_MODULE=Anaconda3/<version>` if you need a newer module than the default (`Anaconda3/2023.09`).
+- Set `ARC_CONDA_TOOLS=/data/.../envs/conda-tools` and `ARC_PYPSA_ENV=/data/.../envs/pypsa-earth-env` if your helper environments live in a different directory.
+- Set `ARC_STAGE_DATA=1` to have the job run `retrieve_databundle_light`/`download_osm_data` (and `build_cutout` if enabled) *before* solving.
+- Set `ARC_SNAKE_DRYRUN=1` to have the final Snakemake call pass `-n` so you can inspect the DAG without running any rules.
 - If you need extra solver modules (e.g. `module load Gurobi/11.0.3`), add them near the top of `jobs/arc_snakemake.sh` just after the Anaconda load.
 
 ### 6. Validating outputs

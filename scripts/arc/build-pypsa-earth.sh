@@ -9,10 +9,17 @@
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=carlo.palazzi@eng.ox.ac.uk
 
+# Usage notes (also mirrored in README):
+#   module load Anaconda3/2023.09 (or export ARC_ANACONDA_MODULE before sbatch)
+#   option A: install micromamba under $HOME/bin and add it to PATH
+#   option B: create a helper env: conda create -y -p /data/.../envs/conda-tools micromamba; source activate it
+#   for interactive shells run: eval "$(micromamba shell hook --shell bash)" before micromamba activate
+
 set -euo pipefail
 
 module purge
-module load Anaconda3/2023.09
+ARC_ANACONDA_MODULE=${ARC_ANACONDA_MODULE:-Anaconda3/2023.09}
+module load "$ARC_ANACONDA_MODULE"
 
 WORKDIR=/data/engs-df-green-ammonia/engs2523/pypsa-earth
 ENV_PREFIX=/data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env
@@ -37,4 +44,10 @@ rm -rf "$ENV_PREFIX"
 "$MICROMAMBA_BIN" run -p "$ENV_PREFIX" conda list --explicit > "$LOGDIR/pypsa-earth-env-conda.txt"
 "$MICROMAMBA_BIN" run -p "$ENV_PREFIX" pip freeze > "$LOGDIR/pypsa-earth-env-pip.txt"
 
-echo "Environment created at $ENV_PREFIX"
+cat <<EONOTE
+Environment created. Use the env interactively with:
+  module load ${ARC_ANACONDA_MODULE}
+  source activate /data/engs-df-green-ammonia/engs2523/envs/conda-tools   # micromamba CLI
+  eval "\$(micromamba shell hook --shell bash)"
+  micromamba activate /data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env
+EONOTE
