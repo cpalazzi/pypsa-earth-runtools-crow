@@ -74,9 +74,11 @@ run_snakemake() {
 
 case "$1" in
   baseline)
+    export ARC_SNAKE_TARGET=${ARC_SNAKE_TARGET:-"results/europe-single-hour/networks/base_s_37_elec_.nc"}
     run_snakemake --configfile config/default-single-timestep.yaml
     ;;
   green-ammonia)
+    export ARC_SNAKE_TARGET=${ARC_SNAKE_TARGET:-"results/europe-green-ammonia/networks/base_s_37_elec_.nc"}
     run_snakemake \
       --configfile config/default-single-timestep.yaml \
       --configfile config/overrides/green-ammonia.yaml
