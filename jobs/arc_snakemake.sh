@@ -54,12 +54,22 @@ if [[ "${ARC_STAGE_DATA:-0}" == "1" ]]; then
 fi
 
 run_snakemake() {
-  snakemake -call solve_network \
-    "$@" \
-    "${EXTRA_ARGS[@]}" \
-    -j "${CPUS}" \
-    --resources mem_mb="${MEM_MB}" \
-    --keep-going --rerun-incomplete
+  local target=${ARC_SNAKE_TARGET:-}
+  if [[ -n "$target" ]]; then
+    snakemake -call "$target" \
+      "$@" \
+      "${EXTRA_ARGS[@]}" \
+      -j "${CPUS}" \
+      --resources mem_mb="${MEM_MB}" \
+      --keep-going --rerun-incomplete
+  else
+    snakemake -call \
+      "$@" \
+      "${EXTRA_ARGS[@]}" \
+      -j "${CPUS}" \
+      --resources mem_mb="${MEM_MB}" \
+      --keep-going --rerun-incomplete
+  fi
 }
 
 case "$1" in
