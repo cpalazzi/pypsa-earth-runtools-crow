@@ -78,10 +78,11 @@ run_snakemake() {
 
 case "$1" in
   baseline)
-    run_snakemake results/europe-single-hour/networks/elec_s_37_ec_lCo2L-3h.nc --configfile config/default-single-timestep.yaml
+    # Use a high-level rule so Snakemake resolves all required outputs per config
+    run_snakemake solve_all_networks --configfile config/default-single-timestep.yaml
     ;;
   green-ammonia)
-    run_snakemake results/europe-green-ammonia/networks/elec_s_37_ec_lCo2L-3h.nc \
+    run_snakemake solve_all_networks \
       --configfile config/default-single-timestep.yaml \
       --configfile config/overrides/green-ammonia.yaml
     ;;
