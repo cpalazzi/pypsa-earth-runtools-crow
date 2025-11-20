@@ -19,7 +19,7 @@ countries: ["Europe"]
 
 snapshots:
   start: "2013-01-01 00:00"
-  end: "2013-01-02 00:00"
+  end: "2013-01-01 04:00"
   inclusive: "left"
   resolution: "1H"
 
