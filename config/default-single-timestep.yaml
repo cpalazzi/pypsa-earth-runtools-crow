@@ -21,9 +21,7 @@ snapshots:
   start: "2013-01-01 00:00"
   end: "2013-01-01 04:00"
   inclusive: "left"
-  # Use freq instead of invalid 'resolution'. 1H gives snapshots at 00,01,02,03.
-  # For coarser 4-hourly test set freq: "4H" and adjust end to "2013-01-01 04:00" with inclusive: "right".
-  freq: "1H"
+  # Leave out 'resolution' or 'freq' here; pipeline supplies freq="h" explicitly.
 
 enable:
   retrieve_databundle: true
