@@ -24,7 +24,7 @@ The files in this repo are meant to be layered on top of an official [`pypsa-ear
    rsync -av ../20251117-pypsa-earth-project/{config,scripts,jobs} ./
    ```
 
-3. Create/activate the PyPSA-Earth environment (either `pixi shell` or classic conda/mamba shown below).
+3. Create/activate the PyPSA-Earth environment (use the provided micromamba-based Slurm script so you do not have to babysit a long interactive job).
 4. Dry-run Snakemake with the baseline config to confirm the DAG is tiny.
 5. Submit the baseline job via the supplied ARC Slurm script.
 6. Repeat with the green-ammonia override.
@@ -61,21 +61,49 @@ rsync -av arc-pypsa-overlay/{config,scripts,jobs} pypsa-earth/
 
 ### 2. Create and activate the environment
 
-Inside `pypsa-earth/` run once:
+The repo ships `scripts/arc/build-pypsa-earth.sh`, a Slurm job that:
 
-```zsh
-conda env create -f envs/environment.yaml -n pypsa-earth
-conda activate pypsa-earth
-pip install --upgrade snakemake snakemake-executor-plugin-slurm
+- downloads a fresh micromamba binary inside the compute node’s `$TMPDIR`,
+- installs `conda-lock` + `mamba` into a tiny helper env,
+- recreates the PyPSA-Earth env under `/data/…/envs/pypsa-earth-env` **from the official `envs/linux-64.lock.yaml`**, and
+- logs the resulting package set for future diffing.
+
+Submit it any time you need a clean environment:
+
+```bash
+cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
+sbatch /data/engs-df-green-ammonia/engs2523/20251117-pypsa-earth-project/scripts/arc/build-pypsa-earth.sh
+squeue -u engs2523                   # watch progress
+tail -f /data/engs-df-green-ammonia/engs2523/envs/logs/pypsa-earth-env.<jobid>.out
 ```
 
-If you prefer [`pixi`](https://pixi.sh/), ARC allows user-space installation. Replace the conda steps with:
+If you have not yet installed micromamba in your ARC account, do it once (takes <1 min):
 
-```zsh
-curl -fsSL https://pixi.sh/install.sh | bash
-source ~/.pixi/env
-pixi install
-pixi shell
+```bash
+mkdir -p $HOME/bin
+curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xvj -C $HOME/bin --strip-components=1 bin/micromamba
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
+Once the build job mails you (or the log stops growing) jump into a short interactive session to verify:
+
+```bash
+srun --pty --partition=interactive --time=00:30:00 --cpus-per-task=2 --mem=4G /bin/bash
+module load Anaconda3/2023.09
+micromamba activate /data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env
+python -c "import pulp, snakemake; print('PuLP', pulp.__version__); print('Snakemake', snakemake.__version__)"
+snakemake --version
+```
+
+> If `micromamba` is not on PATH yet, source `~/.bashrc` or call it via an absolute path (e.g. `$HOME/bin/micromamba`).
+
+After the checks, deactivate (`micromamba deactivate`) and exit the interactive shell. Each future Snakemake run only needs:
+
+```bash
+module load Anaconda3/2023.09
+micromamba activate /data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env
+cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
 ```
 
 ### 3. Baseline single-snapshot Europe run

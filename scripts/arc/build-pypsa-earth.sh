@@ -1,10 +1,10 @@
 #! /bin/bash
 #SBATCH --job-name=build-pypsa-earth
-#SBATCH --chdir='/data/engs-df-green-ammonia/engs2523'
+#SBATCH --chdir=/data/engs-df-green-ammonia/engs2523/pypsa-earth
 #SBATCH --nodes=1
 #SBATCH --cpus-per-task=8
-#SBATCH --partition=short,medium
-#SBATCH --time=02:00:00
+#SBATCH --partition=medium
+#SBATCH --time=06:00:00
 #SBATCH --clusters=all
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=carlo.palazzi@eng.ox.ac.uk
@@ -15,22 +15,26 @@ module purge
 module load Anaconda3/2023.09
 
 WORKDIR=/data/engs-df-green-ammonia/engs2523/pypsa-earth
-CONPREFIX=/data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-2025-11
+ENV_PREFIX=/data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env
 LOGDIR=/data/engs-df-green-ammonia/engs2523/envs/logs
-mkdir -p "$(dirname "$CONPREFIX")" "$LOGDIR"
+MAMBA_ROOT_PREFIX=/data/engs-df-green-ammonia/engs2523/envs/mamba-root
+mkdir -p "$LOGDIR" "$(dirname "$ENV_PREFIX")" "$MAMBA_ROOT_PREFIX"
 
-conda env remove --prefix "$CONPREFIX" -y || true
-conda env create --prefix "$CONPREFIX" --file "$WORKDIR/envs/environment.yaml"
+MICROMAMBA_TAR_URL="https://micro.mamba.pm/api/micromamba/linux-64/latest"
+MICROMAMBA_BIN="$TMPDIR/bin/micromamba"
+if [ ! -x "$MICROMAMBA_BIN" ]; then
+  mkdir -p "$TMPDIR/bin"
+  curl -Ls "$MICROMAMBA_TAR_URL" | tar -xvj -C "$TMPDIR/bin" --strip-components=1 bin/micromamba
+fi
 
-source activate "$CONPREFIX"
-export CONDA_ALWAYS_YES=true
+export MAMBA_ROOT_PREFIX
 
-pip install --upgrade pip
-pip install -U snakemake snakemake-executor-plugin-slurm linopy
+"$MICROMAMBA_BIN" install -y -n base -c conda-forge conda-lock mamba
 
-unset CONDA_ALWAYS_YES
+rm -rf "$ENV_PREFIX"
+"$MICROMAMBA_BIN" run -n base conda-lock install --mamba --prefix "$ENV_PREFIX" "$WORKDIR/envs/linux-64.lock.yaml"
 
-conda list --explicit > "$LOGDIR/pypsa-earth-2025-11-conda.txt"
-pip freeze > "$LOGDIR/pypsa-earth-2025-11-pip.txt"
+"$MICROMAMBA_BIN" run -p "$ENV_PREFIX" conda list --explicit > "$LOGDIR/pypsa-earth-env-conda.txt"
+"$MICROMAMBA_BIN" run -p "$ENV_PREFIX" pip freeze > "$LOGDIR/pypsa-earth-env-pip.txt"
 
-echo "Environment created at $CONPREFIX"
+echo "Environment created at $ENV_PREFIX"
