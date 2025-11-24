@@ -16,6 +16,44 @@ results_dir: results/
 summary_dir: results/
 
 regions: ["europe"]
+countries:
+  - AL
+  - AT
+  - BA
+  - BE
+  - BG
+  - CH
+  - CY
+  - CZ
+  - DE
+  - DK
+  - EE
+  - ES
+  - FI
+  - FR
+  - GB
+  - GR
+  - HR
+  - HU
+  - IE
+  - IT
+  - LT
+  - LU
+  - LV
+  - ME
+  - MK
+  - NL
+  - NO
+  - PL
+  - PT
+  - RO
+  - RS
+  - SE
+  - SI
+  - SK
+  - TR
+  - UA
+  - XK
 
 snapshots:
   start: "2013-01-01 00:00"
