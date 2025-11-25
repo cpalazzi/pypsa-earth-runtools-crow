@@ -5,7 +5,7 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=16
-#SBATCH --mem=48G
+#SBATCH --mem=256G
 #SBATCH --time=08:00:00
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=carlo.palazzi@eng.ox.ac.uk
