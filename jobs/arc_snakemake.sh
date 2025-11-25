@@ -62,9 +62,16 @@ if [[ "${ARC_STAGE_DATA:-0}" == "1" ]]; then
     fi
   done
   if [[ ${#stage_targets[@]} -gt 0 ]]; then
-    snakemake --cores "$CPUS" "${stage_targets[@]}" \
-      --resources mem_mb="$MEM_MB" --keep-going --rerun-incomplete \
-      --latency-wait "$LATENCY_WAIT"
+    if [[ " ${stage_targets[*]} " == *" retrieve_databundle_light "* ]]; then
+      # Pipe "all" (plus final newline) so the databundle CLI auto-selects every bundle and exits cleanly.
+      printf 'all\n\n' | snakemake --cores "$CPUS" "${stage_targets[@]}" \
+        --resources mem_mb="$MEM_MB" --keep-going --rerun-incomplete \
+        --latency-wait "$LATENCY_WAIT"
+    else
+      snakemake --cores "$CPUS" "${stage_targets[@]}" \
+        --resources mem_mb="$MEM_MB" --keep-going --rerun-incomplete \
+        --latency-wait "$LATENCY_WAIT"
+    fi
   fi
 fi
 
