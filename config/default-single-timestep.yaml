@@ -72,7 +72,7 @@ enable:
 scenario:
   simpl: [""]
   ll: ["copt"]
-  clusters: [37]
+  clusters: [110]
   opts: ["Co2L-3h"]
 
 atlite:
