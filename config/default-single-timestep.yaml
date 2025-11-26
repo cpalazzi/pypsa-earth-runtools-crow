@@ -72,8 +72,20 @@ enable:
 scenario:
   simpl: [""]
   ll: ["copt"]
-  clusters: [50]
+  clusters: [140]
   opts: ["Co2L-3h"]
+
+clustering:
+  focus_weights:
+    DE: 0.035
+    FR: 0.035
+    GB: 0.035
+    IT: 0.035
+    ES: 0.035
+    PL: 0.025
+    NO: 0.015
+    SE: 0.02
+    NL: 0.015
 
 atlite:
   nprocesses: 4
