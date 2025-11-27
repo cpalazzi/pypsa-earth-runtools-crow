@@ -54,9 +54,9 @@ Clone PyPSA-Earth and stage this helper repo next to it:
 
 ```zsh
 git clone https://github.com/pypsa-meets-earth/pypsa-earth.git
-scp -r carlo@your-laptop:~/programming/pypsa_models/20251117-pypsa-earth-project ./arc-pypsa-overlay
-rsync -av arc-pypsa-overlay/{config,scripts} pypsa-earth/
-rsync -av arc-pypsa-overlay/scripts/arc/jobs/ pypsa-earth/jobs/
+scp -r carlo@your-laptop:~/programming/pypsa_models/20251117-pypsa-earth-project ./20251117-pypsa-earth-project
+rsync -av 20251117-pypsa-earth-project/{config,scripts} pypsa-earth/
+rsync -av 20251117-pypsa-earth-project/scripts/arc/jobs/ pypsa-earth/jobs/
 ```
 
 > Prefer `rsync` over `cp` so the directory structure is preserved. You can also keep this helper repo as a Git submodule inside `pypsa-earth` if you want to version-lock future tweaks.
