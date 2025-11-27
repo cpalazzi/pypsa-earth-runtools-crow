@@ -18,10 +18,11 @@ The files in this repo are meant to be layered on top of an official [`pypsa-ear
    cd pypsa-earth
    ```
 
-2. Copy this repository next to (or inside) the checkout (again under `$DATA`) and sync the `config/` and `scripts/` folders into PyPSA-Earth (the Slurm helpers now live under `scripts/arc/jobs/`). For example:
+2. Copy this repository next to (or inside) the checkout (again under `$DATA`) and sync the overlay files. Keep the run configs under `config/`, drop helper scripts under `scripts/`, and place the Slurm launcher under PyPSA-Earth’s `jobs/` tree so Snakemake finds it where it expects job scripts:
 
    ```zsh
    rsync -av ../20251117-pypsa-earth-project/{config,scripts} ./
+   rsync -av ../20251117-pypsa-earth-project/scripts/arc/jobs/ ./jobs/
    ```
 
 3. Create/activate the PyPSA-Earth environment (use the provided micromamba-based Slurm script so you do not have to babysit a long interactive job).
@@ -54,7 +55,8 @@ Clone PyPSA-Earth and stage this helper repo next to it:
 ```zsh
 git clone https://github.com/pypsa-meets-earth/pypsa-earth.git
 scp -r carlo@your-laptop:~/programming/pypsa_models/20251117-pypsa-earth-project ./arc-pypsa-overlay
-rsync -av arc-pypsa-overlay/{config,scripts,jobs} pypsa-earth/
+rsync -av arc-pypsa-overlay/{config,scripts} pypsa-earth/
+rsync -av arc-pypsa-overlay/scripts/arc/jobs/ pypsa-earth/jobs/
 ```
 
 > Prefer `rsync` over `cp` so the directory structure is preserved. You can also keep this helper repo as a Git submodule inside `pypsa-earth` if you want to version-lock future tweaks.
