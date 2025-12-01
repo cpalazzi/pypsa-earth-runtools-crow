@@ -151,9 +151,11 @@ cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
 
 ### 4. Green ammonia scenario
 
-1. The override file `config/overrides/green-ammonia.yaml` switches on a custom extra-functionality hook (`scripts/extra/green_ammonia.py`). The script injects three extendable assets at the closest Spanish transmission node to Seville (lon = −5.98, lat = 37.41):
-   - A **green-ammonia electrolyser link** drawing electricity from the local AC bus.
-   - A **dedicated ammonia store** (long-duration energy storage in MWh).
+1. The override file `config/overrides/green-ammonia.yaml` switches on a custom extra-functionality hook (`scripts/extra/green_ammonia.py`). The script injects a full hydrogen-to-ammonia chain at the closest Spanish transmission node to Seville (lon = −5.98, lat = 37.41):
+   - An **electrolyser link** drawing electricity from the local AC bus into a hydrogen bus.
+   - **Hydrogen buffer stores** (pressurised tank and salt cavern variants) sharing that bus.
+   - A **Haber-Bosch synthesis link** that converts hydrogen into ammonia with a minimum load of 20%.
+   - An **ammonia tank store** sized independently from the hydrogen buffers.
    - An **ammonia-fuelled CCGT link** converting stored ammonia back to electricity.
 
 2. The script reads techno-economic parameters (CAPEX, efficiency limits, standing losses, and build caps) from the config file so you can iterate quickly.

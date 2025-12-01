@@ -18,17 +18,42 @@ custom:
       latitude: 37.41
       longitude: -5.98
       bus_substring: "ES"
+    bus_suffixes:
+      hydrogen: "H2"
+      ammonia: "NH3"
     electrolyser:
-      efficiency: 0.62     # kg-NH3 per kWh_elec (converted inside the helper)
+      efficiency: 0.62     # dimensionless: MWh_H2 per MWh_elec
       capital_cost: 750000  # EUR/MW of electrical capacity
       marginal_cost: 1.0    # EUR/MWh consumed
       p_nom_max: 1000       # MW cap; set to null for unconstrained
       lifetime: 20
-    storage:
+    hydrogen_storages:
+      tank:
+        carrier: "H2-tank"
+        capital_cost: 250000  # EUR/MWh_H2 (pressurised tank farm)
+        standing_loss: 0.0008
+        e_nom_max: 1500
+        e_cyclic: true
+      cavern:
+        carrier: "H2-cavern"
+        capital_cost: 120000  # EUR/MWh_H2 (salt cavern)
+        standing_loss: 0.0001
+        e_nom_max: 6000
+        e_cyclic: true
+    synthesis:
+      efficiency: 0.88
+      capital_cost: 1100000
+      marginal_cost: 1.5
+      p_nom_max: 1000
+      lifetime: 30
+      min_pu: 0.2           # enforce continuous 20% minimum utilisation
+    ammonia_storage:
+      carrier: "NH3-tank"
       capital_cost: 150000  # EUR/MWh of stored NH3 energy-equivalent
       standing_loss: 0.0002 # 0.02% per hour
       e_nom_max: 4000       # MWh cap
       e_cyclic: true
+    ammonia_storage_suffix: tank
     ccgt:
       efficiency: 0.55
       capital_cost: 900000  # EUR/MW_elec
@@ -36,6 +61,10 @@ custom:
       p_nom_max: 1000
       lifetime: 25
     carriers:
+      hydrogen: "H2"
+      hydrogen_store: "H2-store"
+      elec_to_h2: "Elec->H2"
+      h2_to_nh3: "H2->NH3"
       ammonia: "NH3"
-      to_power: "NH3->power"
-      to_store: "NH3-store"
+      ammonia_store: "NH3-tank"
+      nh3_to_power: "NH3->power"
