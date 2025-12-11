@@ -6,6 +6,13 @@ run:
   name: europe-day-core-tech
   shared_cutouts: true
 
+scenario:
+  simpl: [""]
+  ll: ["copt"]
+  clusters: [140]
+  opts:
+    - "Co2L-3h"
+
 solving:
   options:
     formulation: kirchhoff
