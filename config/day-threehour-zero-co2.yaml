@@ -1,0 +1,136 @@
+# Single-day configuration with 3-hour snapshot aggregation and a zero CO2 budget.
+# Derived from config/month-threehour-zero-co2.yaml but restricted to the first
+# 24 hours of 2013 to gauge baseline solver performance.
+
+version: 0.7.0
+foresight: overnight
+
+tutorial: false
+
+run:
+  name: europe-day-3h-zero
+  sector_name: ""
+  shared_cutouts: true
+
+results_dir: results/
+summary_dir: results/
+
+regions: ["europe"]
+countries:
+  - "AL"
+  - "AT"
+  - "BA"
+  - "BE"
+  - "BG"
+  - "CH"
+  # - "CY"
+  - "CZ"
+  - "DE"
+  - "DK"
+  - "EE"
+  - "ES"
+  - "FI"
+  - "FR"
+  - "GB"
+  - "GR"
+  - "HR"
+  - "HU"
+  - "IE"
+  - "IT"
+  - "LT"
+  - "LU"
+  - "LV"
+  - "ME"
+  - "MK"
+  - "NL"
+  - "NO"
+  - "PL"
+  - "PT"
+  - "RO"
+  - "RS"
+  - "SE"
+  - "SI"
+  - "SK"
+  # - "TR"
+  # - "UA"
+  - "XK"
+
+snapshots:
+  start: "2013-01-01 00:00"
+  end: "2013-01-02 00:00"
+  inclusive: "left"
+  # Leave out 'resolution' or 'freq'; pipeline supplies freq="h" and the -3h option aggregates later.
+
+enable:
+  retrieve_databundle: true
+  retrieve_databundle_sector: false
+  retrieve_cost_data: true
+  download_osm_data: true
+  build_natura_raster: false
+  build_cutout: false
+
+scenario:
+  simpl: [""]
+  ll: ["copt"]
+  clusters: [140]
+  opts:
+    - "Co2L-3h"  # Co2L applies the PyPSA-Earth CO2 cap preset; -3h coarsens snapshots into 3 h blocks
+
+clustering:
+  focus_weights:
+    DE: 0.035
+    FR: 0.035
+    GB: 0.035
+    IT: 0.035
+    ES: 0.035
+    PL: 0.025
+    NO: 0.015
+    SE: 0.02
+    NL: 0.015
+
+atlite:
+  nprocesses: 4
+  cutouts:
+    cutout-2013-era5:
+      module: era5
+      dx: 0.3
+      dy: 0.3
+      time: ["2013-01-01", "2013-01-02"]
+  default_cutout: cutout-2013-era5
+
+load_options:
+  ssp: "ssp2-2.6"
+  weather_year: 2013
+  prediction_year: 2030
+  scale: 1
+
+solving:
+  options:
+    formulation: kirchhoff
+    load_shedding: 500.
+    noisy_costs: false
+    clip_p_max_pu: 0.01
+    min_iterations: 1
+    max_iterations: 2
+    skip_iterations: true
+    track_iterations: false
+  solver:
+    # Force HiGHS to dodge ARC's limited Gurobi license.
+    name: highs
+    options: highs-default
+  mem: 24000
+
+logging:
+  level: INFO
+
+plotting:
+  map:
+    boundaries: [-11.0, 30.0, 34.0, 72.0]
+    figsize: [7, 7]
+
+global_constraints:
+  - name: CO2LimitZero
+    sense: "<="
+    type: "primary_energy"
+    carrier_attribute: "co2_emissions"
+    constant: 0.0  # enforce zero operational CO2 across the model horizon
