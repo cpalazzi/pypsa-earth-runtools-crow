@@ -10,6 +10,16 @@
 #SBATCH --mail-type=BEGIN,END
 #SBATCH --mail-user=carlo.palazzi@eng.ox.ac.uk
 
+if [ -f /etc/profile ]; then
+  source /etc/profile
+fi
+if [ -f /etc/profile.d/modules.sh ]; then
+  source /etc/profile.d/modules.sh
+fi
+if [ -f /etc/profile.d/lmod.sh ]; then
+  source /etc/profile.d/lmod.sh
+fi
+
 set -euo pipefail
 
 if [[ $# -lt 2 ]]; then
@@ -36,10 +46,7 @@ module load "$GUROBI_MODULE"
 
 PYPSA_ENV=${ARC_PYPSA_ENV:-"/data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env-gurobi10"}
 
-if [ -n "${EBROOTANACONDA3:-}" ] && [ -f "$EBROOTANACONDA3/etc/profile.d/conda.sh" ]; then
-  source "$EBROOTANACONDA3/etc/profile.d/conda.sh"
-fi
-conda activate "$PYPSA_ENV"
+export PATH="$PYPSA_ENV/bin:$PATH"
 
 export PYPSA_SOLVER_NAME=${PYPSA_SOLVER_NAME:-gurobi}
 export LINOPY_SOLVER=${LINOPY_SOLVER:-gurobi}
