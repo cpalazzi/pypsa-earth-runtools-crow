@@ -41,7 +41,7 @@ if [ -d "$ENV_PREFIX" ]; then
 fi
 conda create -y -p "$ENV_PREFIX" python=3.10
 echo "python=3.10*" > "$ENV_PREFIX/conda-meta/pinned"
-conda env update -y -p "$ENV_PREFIX" -f "$WORKDIR/envs/environment.yaml"
+conda env update -p "$ENV_PREFIX" -f "$WORKDIR/envs/environment.yaml"
 conda install -y -p "$ENV_PREFIX" -c gurobi gurobi
 
 conda list -p "$ENV_PREFIX" > "$LOGDIR/pypsa-earth-env-gurobi-packages.txt"
