@@ -19,6 +19,9 @@ fi
 if [ -f /etc/profile.d/lmod.sh ]; then
   source /etc/profile.d/lmod.sh
 fi
+if ! command -v module >/dev/null 2>&1; then
+  source /usr/share/lmod/lmod/init/bash
+fi
 
 set -euo pipefail
 
@@ -41,8 +44,10 @@ module restore 2>/dev/null || true
 ANACONDA_MODULE=${ARC_ANACONDA_MODULE:-"Anaconda3/2024.06-1"}
 module load "$ANACONDA_MODULE"
 
-GUROBI_MODULE=${ARC_GUROBI_MODULE:-"Gurobi/10.0.3-GCCcore-12.2.0"}
-module load "$GUROBI_MODULE"
+GUROBI_MODULE=${ARC_GUROBI_MODULE:-""}
+if [ -n "$GUROBI_MODULE" ]; then
+  module load "$GUROBI_MODULE"
+fi
 
 PYPSA_ENV=${ARC_PYPSA_ENV:-"/data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env-gurobi"}
 

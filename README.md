@@ -109,7 +109,9 @@ Once the build job mails you (or the log stops growing) jump into a short intera
 ```bash
 srun --pty --partition=interactive --time=00:30:00 --cpus-per-task=2 --mem=4G /bin/bash
 module load Anaconda3/2024.06-1
-module load Gurobi/10.0.3-GCCcore-12.2.0
+## Optional: only load a Gurobi module if you are not using the conda-provided Gurobi.
+## For WLS licensing with conda-installed Gurobi, leave this unset.
+export ARC_GUROBI_MODULE=""
 source $EBROOTANACONDA3/etc/profile.d/conda.sh
 conda activate /data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env-gurobi
 python -c "import sys; print(sys.version)"
@@ -121,7 +123,8 @@ Each future Snakemake run only needs:
 
 ```bash
 module load Anaconda3/2024.06-1
-module load Gurobi/10.0.3-GCCcore-12.2.0
+## Optional: only load a Gurobi module if you are not using the conda-provided Gurobi.
+export ARC_GUROBI_MODULE=""
 source $EBROOTANACONDA3/etc/profile.d/conda.sh
 conda activate /data/engs-df-green-ammonia/engs2523/envs/pypsa-earth-env-gurobi
 export GRB_LICENSE_FILE=/data/engs-df-green-ammonia/engs2523/licenses/gurobi.lic

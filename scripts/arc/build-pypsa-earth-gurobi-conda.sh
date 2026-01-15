@@ -35,7 +35,8 @@ LOGDIR=/data/engs-df-green-ammonia/engs2523/envs/logs
 mkdir -p "$LOGDIR" "$(dirname "$ENV_PREFIX")"
 
 rm -rf "$ENV_PREFIX"
-conda env create -y -p "$ENV_PREFIX" -f "$WORKDIR/envs/environment.yaml"
+conda env create -y -p "$ENV_PREFIX" -f "$WORKDIR/envs/environment.yaml" python=3.10
+conda install -y -p "$ENV_PREFIX" -c gurobi gurobi
 
 conda list -p "$ENV_PREFIX" > "$LOGDIR/pypsa-earth-env-gurobi-packages.txt"
 "$ENV_PREFIX/bin/python" -c "import sys; print(sys.version)"
