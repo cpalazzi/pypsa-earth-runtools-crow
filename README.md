@@ -10,7 +10,11 @@ The files in this repo are meant to be layered on top of our patched [`pypsa-ear
 
 > **Oxford ARC login**: `engs2523@arc-login.arc.ox.ac.uk`
 
-> **Automation note (SSH)**: When running checks via an AI agent, use a single SSH command with a chained script (e.g., `ssh user@host "<commands>"`) rather than an interactive session. Agents cannot type into a live SSH prompt, so use inline commands or batch scripts and inspect the output.
+> **Automation note (SSH)**:
+> - The AI agent cannot respond to interactive prompts (including password prompts) when it runs commands.
+> - If SSH prompts for a password, run the provided `ssh user@host "<commands>"` command yourself in a terminal, type the password when prompted, then paste the output back into the chat.
+> - If you want the agent to run SSH commands end-to-end without you intervening, set up key-based SSH auth (or another non-interactive method supported by your environment) so `ssh -o BatchMode=yes ...` works.
+> - Prefer a single SSH command that executes all needed remote commands (e.g., `ssh user@host "<commands>"`) rather than an interactive session, so outputs are easy to capture and share.
 
 > **Lock cleanup note**: If a run fails early (or a previous job was killed), Snakemake may leave a lock in the PyPSA-Earth working directory. Before resubmitting, clear the lock and any stale job outputs:
 > 1) Ensure no other Snakemake jobs are running (`squeue -u <user>`). 2) Unlock with the full conda path: `/data/.../envs/pypsa-earth-env/bin/snakemake --unlock` from the repo root. 3) Remove stale `slurm-<jobid>.out` files only if you no longer need them.
@@ -47,9 +51,9 @@ Each time you merge upstream changes, run the PyPSA-Earth test suite locally (at
 2. Copy this repository next to (or inside) the checkout (again under `$DATA`) and sync the overlay files. Keep the run configs under `config/`, drop helper scripts under `scripts/extra/`, and place the Slurm launcher under PyPSA-Earth’s `jobs/` tree so Snakemake finds it where it expects job scripts:
 
    ```zsh
-   rsync -av ../20251117-pypsa-earth-project/config/ ./config/ &&
-   rsync -av ../20251117-pypsa-earth-project/scripts/extra/ ./scripts/extra/ &&
-   rsync -av ../20251117-pypsa-earth-project/scripts/arc/jobs/ ./jobs/
+   rsync -av ../pypsa-earth-runtools-crow/config/ ./config/ &&
+   rsync -av ../pypsa-earth-runtools-crow/scripts/extra/ ./scripts/extra/ &&
+   rsync -av ../pypsa-earth-runtools-crow/scripts/arc/jobs/ ./jobs/
    ```
 
 3. Create/activate the PyPSA-Earth environment (use the provided conda-based Slurm script so you do not have to babysit a long interactive job).
@@ -84,10 +88,10 @@ Clone the fork and stage this helper repo next to it:
 git clone https://github.com/cpalazzi/pypsa-earth.git
 cd pypsa-earth
 git remote add upstream https://github.com/pypsa-meets-earth/pypsa-earth.git
-scp -r carlo@your-laptop:~/programming/pypsa_models/20251117-pypsa-earth-project ./20251117-pypsa-earth-project
-rsync -av 20251117-pypsa-earth-project/config/ pypsa-earth/config/
-rsync -av 20251117-pypsa-earth-project/scripts/extra/ pypsa-earth/scripts/extra/
-rsync -av 20251117-pypsa-earth-project/scripts/arc/jobs/ pypsa-earth/jobs/
+scp -r carlo@your-laptop:~/programming/pypsa_models/pypsa-earth-runtools-crow ./pypsa-earth-runtools-crow
+rsync -av pypsa-earth-runtools-crow/config/ pypsa-earth/config/
+rsync -av pypsa-earth-runtools-crow/scripts/extra/ pypsa-earth/scripts/extra/
+rsync -av pypsa-earth-runtools-crow/scripts/arc/jobs/ pypsa-earth/jobs/
 ```
 
 > Prefer `rsync` over `cp` so the directory structure is preserved. You can also keep this helper repo as a Git submodule inside `pypsa-earth` if you want to version-lock future tweaks.
@@ -104,7 +108,7 @@ Submit it any time you need a clean environment:
 
 ```bash
 cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
-sbatch /data/engs-df-green-ammonia/engs2523/20251117-pypsa-earth-project/scripts/arc/build-pypsa-earth-env
+sbatch /data/engs-df-green-ammonia/engs2523/pypsa-earth-runtools-crow/scripts/arc/build-pypsa-earth-env
 squeue -u engs2523                   # watch progress
 tail -f /data/engs-df-green-ammonia/engs2523/pypsa-earth/slurm-<jobid>.out
 ```
@@ -165,7 +169,7 @@ cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
 4. To run on ARC with Gurobi, submit the job script (it uses the conda Gurobi install and WLS license):
 
     ```zsh
-    sbatch /data/engs-df-green-ammonia/engs2523/20251117-pypsa-earth-project/scripts/arc/jobs/arc_snakemake_gurobi.sh \
+   sbatch /data/engs-df-green-ammonia/engs2523/pypsa-earth-runtools-crow/scripts/arc/jobs/arc_snakemake_gurobi.sh \
        europe config/default-single-timestep.yaml
     ```
 
@@ -176,14 +180,14 @@ cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
 1. **Yearly base (standard CO2 cap preset)**
 
     ```zsh
-    sbatch /data/engs-df-green-ammonia/engs2523/20251117-pypsa-earth-project/scripts/arc/jobs/arc_snakemake_gurobi.sh \
+   sbatch /data/engs-df-green-ammonia/engs2523/pypsa-earth-runtools-crow/scripts/arc/jobs/arc_snakemake_gurobi.sh \
        europe-yearly-3h config/yearly-threehour.yaml
     ```
 
 2. **Yearly zero-CO2**
 
     ```zsh
-    sbatch /data/engs-df-green-ammonia/engs2523/20251117-pypsa-earth-project/scripts/arc/jobs/arc_snakemake_gurobi.sh \
+   sbatch /data/engs-df-green-ammonia/engs2523/pypsa-earth-runtools-crow/scripts/arc/jobs/arc_snakemake_gurobi.sh \
        europe-yearly-3h-zero config/yearly-threehour-zero-co2.yaml
     ```
 
@@ -209,6 +213,14 @@ cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
 - **Keep snapshots coarse**: retain `Co2L-3h` for 3-hour aggregation.
 - **Tune solver threads**: set Gurobi `Threads` in solver options if needed.
 - **Avoid module mismatches**: keep `ARC_GUROBI_MODULE` unset when using conda-installed Gurobi.
+
+### Troubleshooting notes
+
+- **`retrieve_cost_data` fails with a `FileNotFoundError`**: Root cause is a PyPSA-Earth `Snakefile` bug when moving Snakemake `HTTP.remote(..., keep_local=True)` inputs.
+   - Fix is tracked in the separate `pypsa-earth` repo (not this overlay): open a PR from branch `fix/retrieve-cost-data-local-path` in `https://github.com/cpalazzi/pypsa-earth`.
+   - Upstream reference (buggy line): `https://github.com/pypsa-meets-earth/pypsa-earth/blob/main/Snakefile#L445-L449`.
+
+- **Renewable profiles take hours**: Reducing `clusters` speeds the *network size*, but the atlite availability-matrix step can still dominate runtime because it’s upstream of the solve.
 
 ### 5. Green ammonia scenario
 
