@@ -14,3 +14,8 @@ shapely!=2.0.4
 scipy<1.16
 networkx
 pyproj
+cartopy
+contextily
+folium
+geoviews
+hvplot
