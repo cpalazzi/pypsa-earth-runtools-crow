@@ -126,7 +126,15 @@ custom:
       - "offwind-ac"
       - "offwind-dc"
       - "solar"
+      - "hydro"
+      - "ror"  # run-of-river
+      - "biomass"
+      - "coal"
+      - "lignite"
+      - "oil"
+      - "load shedding"  # penalty generator for infeasible runs
     allow_storage:
-      - "PHS"
+      - "PHS"  # pumped hydro storage
       - "battery"
-      - "gas"
+      - "gas"  # hydrogen storage
+      - "H2"  # hydrogen storage
