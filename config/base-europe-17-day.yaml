@@ -1,0 +1,149 @@
+# Base configuration for 17-country Europe subset with single-day time horizon.
+# Contains all SHARED settings across different technology scenarios.
+# Use this as the first config, then layer scenario-specific tech restrictions on top.
+#
+# Usage:
+#   snakemake --configfile config/base-europe-17-day.yaml \
+#             --configfile config/scenarios/<scenario>.yaml
+
+version: 0.8.0
+foresight: overnight
+tutorial: false
+
+results_dir: results/
+summary_dir: results/
+
+# ============================================================================
+# GEOGRAPHIC SCOPE (shared across all scenarios)
+# ============================================================================
+regions: ["europe"]
+countries:
+  - "AT"  # Austria
+  - "BG"  # Bulgaria
+  - "CZ"  # Czech Republic
+  - "DE"  # Germany
+  - "DK"  # Denmark
+  - "ES"  # Spain
+  - "FR"  # France
+  - "GB"  # United Kingdom
+  - "GR"  # Greece
+  - "HU"  # Hungary
+  - "IT"  # Italy
+  - "PL"  # Poland
+  - "PT"  # Portugal
+  - "RO"  # Romania
+  - "RS"  # Serbia
+  - "SE"  # Sweden
+
+# ============================================================================
+# CLUSTERING (shared across all scenarios)
+# ============================================================================
+scenario:
+  simpl: [""]
+  ll: ["copt"]
+  clusters: [70]  # 70 total nodes distributed across 17 countries
+  opts:
+    - "Co2L-3h"  # CO2 limit + 3-hour time resolution
+
+# Focus weights distribute 70 clusters proportionally across countries
+# Lower weight = fewer nodes (e.g., SE gets 1 node with 0.0045 weight)
+focus_weights:
+  DE: 0.0417  # Germany: ~3 nodes
+  FR: 0.0492  # France: ~3 nodes
+  GB: 0.0418  # UK: ~3 nodes
+  IT: 0.0416  # Italy: ~3 nodes
+  ES: 0.0294  # Spain: ~2 nodes
+  PL: 0.0236  # Poland: ~2 nodes
+  NL: 0.0111  # Netherlands: ~1 node
+  SE: 0.0045  # Sweden: ~1 node
+  DK: 0.0037  # Denmark: ~1 node
+  NO: 0.0034  # Norway: ~1 node
+  AT: 0.0055  # Austria: ~1 node
+  BG: 0.0030  # Bulgaria: ~1 node
+  CZ: 0.0050  # Czech Republic: ~1 node
+  GR: 0.0040  # Greece: ~1 node
+  HU: 0.0040  # Hungary: ~1 node
+  PT: 0.0035  # Portugal: ~1 node
+  RO: 0.0045  # Romania: ~1 node
+  RS: 0.0025  # Serbia: ~1 node
+
+# ============================================================================
+# TIME HORIZON (shared across all scenarios)
+# ============================================================================
+snapshots:
+  start: "2013-01-01 00:00"
+  end: "2013-01-02 00:00"
+  inclusive: "left"
+
+# ============================================================================
+# DATA RETRIEVAL (shared across all scenarios)
+# ============================================================================
+enable:
+  retrieve_databundle: true
+  retrieve_databundle_sector: false
+  retrieve_cost_data: true
+  download_osm_data: true
+  build_natura_raster: false
+  build_cutout: false
+
+# ============================================================================
+# WEATHER DATA (shared across all scenarios)
+# ============================================================================
+atlite:
+  nprocesses: 4
+  cutouts:
+    cutout-2013-era5:
+      module: era5
+      dx: 0.3
+      dy: 0.3
+      time: ["2013-01-01", "2013-01-02"]
+  default_cutout: cutout-2013-era5
+
+# ============================================================================
+# LOAD DATA (shared across all scenarios)
+# ============================================================================
+load_options:
+  ssp: "ssp2-2.6"
+  weather_year: 2013
+  prediction_year: 2030
+  scale: 1
+
+# ============================================================================
+# SOLVER SETTINGS (shared across all scenarios)
+# ============================================================================
+solving:
+  options:
+    formulation: kirchhoff
+    load_shedding: 500.  # EUR/MWh penalty for unserved load
+    noisy_costs: false
+    clip_p_max_pu: 0.01
+    min_iterations: 1
+    max_iterations: 2
+    skip_iterations: true
+    track_iterations: false
+    # NOTE: extra_functionality is scenario-specific and should be overridden
+  solver:
+    name: gurobi
+    options: gurobi-default
+  mem: 24000
+
+# ============================================================================
+# CONSTRAINTS (can be overridden in scenarios)
+# ============================================================================
+global_constraints:
+  - name: CO2LimitZero
+    sense: "<="
+    type: "primary_energy"
+    carrier_attribute: "co2_emissions"
+    constant: 0.0
+
+# ============================================================================
+# MISC SETTINGS
+# ============================================================================
+logging:
+  level: INFO
+
+plotting:
+  map:
+    boundaries: [-11.0, 30.0, 34.0, 72.0]
+    figsize: [7, 7]

@@ -1,0 +1,53 @@
+# Scenario: Core Technologies - Electricity Only
+# Layer this on top of config/base-europe-17-day.yaml
+# 
+# Restricts the network to core electricity generation and storage technologies.
+# No hydrogen, ammonia, or other sector coupling.
+#
+# Usage:
+#   snakemake --configfile config/base-europe-17-day.yaml \
+#             --configfile config/scenarios/core-techs-electricity.yaml
+
+run:
+  name: europe-day-core-tech-elec
+  sector_name: ""
+  shared_cutouts: true
+
+# ============================================================================
+# TECHNOLOGY RESTRICTIONS
+# ============================================================================
+solving:
+  options:
+    extra_functionality:
+      - scripts/extra/limit_core_technologies.py::limit_core_technologies
+
+custom:
+  core_technologies:
+    # Allowed electricity generation technologies (modern clean energy mix)
+    allow_generators:
+      - "solar"             # Solar PV
+      - "onwind"            # Onshore wind
+      - "offwind-ac"        # Offshore wind (AC connected)
+      - "offwind-dc"        # Offshore wind (DC connected)
+      - "CCGT"              # Combined cycle gas turbine (flexible backup)
+      - "nuclear"           # Nuclear power (baseload)
+      - "hydro"             # Hydroelectric reservoir
+      - "ror"               # Run-of-river hydro
+      - "load shedding"     # Penalty generator for infeasibility
+      # EXCLUDED: coal, lignite, oil, biomass, geothermal
+      # EXCLUDED: H2 turbine, ammonia CCGT, fuel cell, electrolysis
+
+    # Allowed electricity storage technologies
+    allow_storage:
+      - "PHS"               # Pumped hydro storage
+      - "battery"           # Battery storage
+      # EXCLUDED: H2 storage, ammonia storage
+
+    # Allowed transmission/transport links
+    allow_links:
+      - "DC"                # HVDC electricity transmission
+      - "gas pipeline"      # Natural gas pipeline transport
+      # EXCLUDED: H2 pipeline, ammonia pipeline, electrolysis, synthesis
+
+    # No sector coupling stores in electricity-only scenario
+    allow_stores: []

@@ -1,0 +1,62 @@
+# Scenario: Core Technologies + Green Ammonia
+# Layer this on top of config/base-europe-17-day.yaml
+#
+# Includes all core electricity technologies PLUS green ammonia production chain:
+# - Green ammonia synthesis (electrolysis + Haber-Bosch)
+# - Ammonia CCGT (power generation from ammonia)
+# - Ammonia storage (tanks, pipelines)
+#
+# Usage:
+#   snakemake --configfile config/base-europe-17-day.yaml \
+#             --configfile config/scenarios/core-techs-ammonia.yaml
+
+run:
+  name: europe-day-core-tech-ammonia
+  sector_name: ""
+  shared_cutouts: true
+
+# ============================================================================
+# TECHNOLOGY RESTRICTIONS
+# ============================================================================
+solving:
+  options:
+    extra_functionality:
+      - scripts/extra/limit_core_technologies.py::limit_core_technologies
+
+custom:
+  core_technologies:
+    # Allowed electricity generation technologies (modern clean energy mix)
+    allow_generators:
+      - "solar"             # Solar PV
+      - "onwind"            # Onshore wind
+      - "offwind-ac"        # Offshore wind (AC connected)
+      - "offwind-dc"        # Offshore wind (DC connected)
+      - "CCGT"              # Combined cycle gas turbine (natural gas)
+      - "nuclear"           # Nuclear power (baseload)
+      - "hydro"             # Hydroelectric reservoir
+      - "ror"               # Run-of-river hydro
+      - "load shedding"     # Penalty generator for infeasibility
+      # GREEN AMMONIA ADDITIONS:
+      - "ammonia CCGT"      # Ammonia combustion turbine (burns NH3)
+      # EXCLUDED: coal, lignite, oil, biomass, geothermal
+      # EXCLUDED: H2 turbine, fuel cell, electrolysis as generator
+
+    # Allowed electricity storage technologies
+    allow_storage:
+      - "PHS"               # Pumped hydro storage
+      - "battery"           # Battery storage
+      # EXCLUDED: H2 storage units (use stores instead)
+
+    # Allowed conversion links (GREEN AMMONIA CHAIN)
+    allow_links:
+      - "H2 Electrolysis"           # Water → H2 (via electricity)
+      - "ammonia synthesis"         # H2 + N2 → NH3 (Haber-Bosch)
+      - "ammonia cracker"           # NH3 → H2 (reverse, if needed)
+      - "ammonia pipeline"          # NH3 transport between nodes
+      # EXCLUDED: other sector links (heat, transport, industry)
+
+    # Allowed stores (GREEN AMMONIA STORAGE)
+    allow_stores:
+      - "H2"                        # Hydrogen storage tank
+      - "ammonia"                   # Ammonia storage tank
+      # EXCLUDED: heat storage, battery as store (use storage_units)

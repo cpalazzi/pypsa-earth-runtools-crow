@@ -18,11 +18,13 @@ DEFAULT_GENERATORS = {
     "solar",
 }
 DEFAULT_STORAGES = {"PHS", "battery", "gas"}
+DEFAULT_LINKS = {"DC", "gas pipeline"}  # Electricity transmission + gas transport
 
 COMPONENT_ATTR = {
     "Generator": "generators",
     "Store": "stores",
     "StorageUnit": "storage_units",
+    "Link": "links",
 }
 
 
@@ -52,13 +54,15 @@ def limit_core_technologies(
     config: Optional[Dict[str, Any]] = None,
     **_,
 ) -> None:
-    """Keep only the requested carrier sets for generators and storage."""
+    """Keep only the requested carrier sets for generators, storage, and links."""
 
     cfg: Dict[str, Any] = config or getattr(network, "config", {})
     custom_cfg: Dict[str, Any] = cfg.get("custom", {}).get("core_technologies", {})
     allowed_generators = set(custom_cfg.get("allow_generators", DEFAULT_GENERATORS))
     allowed_storage = set(custom_cfg.get("allow_storage", DEFAULT_STORAGES))
+    allowed_links = set(custom_cfg.get("allow_links", DEFAULT_LINKS))
 
     _drop_components(network, "Generator", allowed_generators)
     _drop_components(network, "Store", allowed_storage)
     _drop_components(network, "StorageUnit", allowed_storage)
+    _drop_components(network, "Link", allowed_links)
