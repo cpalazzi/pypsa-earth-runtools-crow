@@ -48,7 +48,7 @@ scenario:
     - "Co2L-3h"  # CO2 limit + 3-hour time resolution
 
 # Focus weights distribute 70 clusters proportionally across 17 countries
-# Weights MUST sum to 1.0 (normalized distribution)
+# Weights MUST sum to <= 1.0 (normalized distribution)
 # Based on relative electricity demand/population to ensure proper clustering
 focus_weights:
   DE: 0.1559  # Germany: ~11 nodes
@@ -57,7 +57,7 @@ focus_weights:
   IT: 0.1556  # Italy: ~11 nodes
   ES: 0.1099  # Spain: ~8 nodes
   PL: 0.0883  # Poland: ~6 nodes
-  SE: 0.0168  # Sweden: ~1 node
+  SE: 0.0167  # Sweden: ~1 node
   DK: 0.0138  # Denmark: ~1 node
   AT: 0.0206  # Austria: ~1 node
   BG: 0.0112  # Bulgaria: ~1 node
@@ -66,8 +66,8 @@ focus_weights:
   HU: 0.0150  # Hungary: ~1 node
   PT: 0.0131  # Portugal: ~1 node
   RO: 0.0168  # Romania: ~1 node
-  RS: 0.0094  # Serbia: ~1 node
-  # Total: 1.0004 ≈ 1.0 (rounding)
+  RS: 0.0093  # Serbia: ~1 node
+  # Total: 0.9999 <= 1.0 (normalized)
 
 # ============================================================================
 # TIME HORIZON (shared across all scenarios)
