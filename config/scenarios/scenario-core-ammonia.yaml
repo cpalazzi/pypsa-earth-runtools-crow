@@ -1,5 +1,5 @@
 # Scenario: Core Technologies + Green Ammonia
-# Layer this on top of config/base-europe-17-day.yaml
+# Layer on top of base-europe17-70n-day.yaml
 #
 # Includes all core electricity technologies PLUS green ammonia production chain:
 # - Green ammonia synthesis (electrolysis + Haber-Bosch)
@@ -7,8 +7,8 @@
 # - Ammonia storage (tanks, pipelines)
 #
 # Usage:
-#   snakemake --configfile config/base-europe-17-day.yaml \
-#             --configfile config/scenarios/core-techs-ammonia.yaml
+#   snakemake --configfile config/base-europe17-70n-day.yaml \
+#             --configfile config/scenarios/scenario-core-ammonia.yaml
 
 run:
   name: europe-day-core-tech-ammonia

@@ -1,12 +1,12 @@
 # Scenario: Core Technologies - Electricity Only
-# Layer this on top of config/base-europe-17-day.yaml
+# Layer on top of base-europe17-70n-day.yaml
 # 
-# Restricts the network to core electricity generation and storage technologies.
+# Restricts network to core electricity generation and storage technologies.
 # No hydrogen, ammonia, or other sector coupling.
 #
 # Usage:
-#   snakemake --configfile config/base-europe-17-day.yaml \
-#             --configfile config/scenarios/core-techs-electricity.yaml
+#   snakemake --configfile config/base-europe17-70n-day.yaml \
+#             --configfile config/scenarios/scenario-core-electricity.yaml
 
 run:
   name: europe-day-core-tech-elec

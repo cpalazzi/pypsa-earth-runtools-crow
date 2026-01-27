@@ -1,10 +1,12 @@
-# Base configuration for 17-country Europe subset with single-day time horizon.
-# Contains all SHARED settings across different technology scenarios.
-# Use this as the first config, then layer scenario-specific tech restrictions on top.
+# Base configuration: 17-country Europe subset, 70 nodes, single-day time horizon
+# Contains all SHARED settings across technology scenarios (geography, clustering, time, solver)
+# Layer scenario-specific tech restrictions on top via scenario configs
 #
 # Usage:
-#   snakemake --configfile config/base-europe-17-day.yaml \
-#             --configfile config/scenarios/<scenario>.yaml
+#   snakemake --configfile config/base-europe17-70n-day.yaml \
+#             --configfile config/scenarios/scenario-<name>.yaml
+#
+# Naming convention: base-{region}{countries}-{clusters}n-{time}.yaml
 
 version: 0.8.0
 foresight: overnight
