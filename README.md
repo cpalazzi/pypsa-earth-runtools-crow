@@ -97,6 +97,55 @@ On ARC, we use conda to manage the full PyPSA-Earth environment. This includes S
 - **Data**: Auto-downloads cutouts if `enable.retrieve_databundle: true`
 - **Storage**: Work in `$DATA/<project>/<user>`, not home (~15 GB limit)
 
+## Terminal Workflow: Local vs. ARC Sessions
+
+When working with this project, you will switch between **local (your laptop)** and **ARC (remote HPC)** terminals. Understanding which terminal you're in is critical for knowing whether to use `ssh` wrappers or run commands directly.
+
+### Identifying Your Terminal
+
+Check the shell prompt:
+- **Local machine**: Shows your laptop hostname, e.g. `carlopalazzi@macbook ~ %` or `user@laptop:~$`
+- **ARC login node**: Shows ARC hostname, e.g. `[engs2523@arc-login04 engs2523]$`
+
+### Working Patterns
+
+**Pattern 1: Running from local terminal (most secure for scripts)**
+- Keep your terminal in your local directory: `/Users/carlopalazzi/programming/pypsa_models/pypsa-earth-runtools-crow`
+- Use `ssh -n` wrappers to run ARC commands remotely:
+  ```bash
+  ssh -n engs2523@arc-login.arc.ox.ac.uk 'cd /data/engs-df-green-ammonia/engs2523/pypsa-earth && squeue -u engs2523'
+  ```
+- **Advantage**: Explicit, reproducible, doesn't depend on session state; good for automation and scripts.
+- **Disadvantage**: Requires password for each command (unless key-based auth is set up).
+
+**Pattern 2: Running from ARC terminal (fast for interactive debugging)**
+- First, log into ARC once: `ssh engs2523@arc-login.arc.ox.ac.uk`
+- Your prompt becomes `[engs2523@arc-login04 ...]$`
+- Run commands directly without `ssh` wrappers:
+  ```bash
+  squeue -u engs2523
+  cd /data/engs-df-green-ammonia/engs2523/pypsa-earth
+  ```
+- To return to local: type `exit`
+- **Advantage**: Fast, no repeated password prompts, natural for exploratory work.
+- **Disadvantage**: Easy to forget you're on ARC; session ends if connection drops.
+
+### Recommended Workflow
+
+1. **For submission and monitoring**: Use Pattern 2 (ARC terminal session)
+   - SSH into ARC once at the start of a session
+   - Submit jobs, check `squeue`, tail logs directly
+   - Exit when done
+
+2. **For config edits and version control**: Work locally (Pattern 1)
+   - Edit configs in your laptop editor
+   - Commit/push to GitHub
+   - Pull on ARC to sync changes
+
+3. **For automation/CI**: Use Pattern 1 (ssh wrappers)
+   - Explicit remote execution
+   - Reproducible and debuggable
+
 ## Step-by-step instructions
 
 ### 1. Log into ARC and stage the repositories
