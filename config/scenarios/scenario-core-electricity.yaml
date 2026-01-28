@@ -47,7 +47,9 @@ custom:
     allow_links:
       - "DC"                # HVDC electricity transmission
       - "gas pipeline"      # Natural gas pipeline transport
-      # EXCLUDED: H2 pipeline, ammonia pipeline, electrolysis, synthesis
+      - "battery charger"   # AC → battery converter (for allowed battery storage)
+      - "battery discharger" # battery → AC converter (for allowed battery storage)
+      # EXCLUDED: H2 pipeline, H2 electrolysis, H2 fuel cell, ammonia pipeline, ammonia synthesis
 
     # No sector coupling stores in electricity-only scenario
     allow_stores: []

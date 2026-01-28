@@ -66,16 +66,3 @@ def limit_core_technologies(
     _drop_components(network, "Store", allowed_storage)
     _drop_components(network, "StorageUnit", allowed_storage)
     _drop_components(network, "Link", allowed_links)
-    
-    # Additionally, drop links with H2 or battery-related carriers that may not be in the allowed list
-    # (e.g., "H2 electrolysis", "H2 fuel cell", "battery charger", "battery discharger")
-    links = network.links
-    h2_batt_links = links[links['carrier'].str.contains('H2|battery', na=False, case=False)]
-    if not h2_batt_links.empty:
-        drop_idx = h2_batt_links.index
-        try:
-            network.mremove("Link", drop_idx)
-        except AttributeError:  # pragma: no cover - fallback for older PyPSA versions
-            for name in drop_idx:
-                network.remove("Link", name)
-        print(f"Removed {len(drop_idx)} H2/battery-related links outside the allowed tech list")
