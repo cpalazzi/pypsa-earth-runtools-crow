@@ -50,7 +50,7 @@ scenario:
 # Clustering options for controlling node distribution
 # PyPSA-Earth will use focus_weights to distribute clusters proportionally across countries
 cluster_options:
-  distribute_clusters: ["load"]  # Distribute clusters based on electricity load
+  distribute_cluster: ["load"]  # Distribute clusters based on electricity load
   focus_weights:
     DE: 0.1558  # Germany: ~11 nodes
     FR: 0.1840  # France: ~13 nodes
